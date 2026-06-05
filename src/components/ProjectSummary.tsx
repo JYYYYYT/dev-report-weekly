@@ -137,10 +137,10 @@ export function ProjectSummary() {
   const { projects, selectedProjectIds, setCurrentStep } = useAppStore();
   const { t } = useTranslation();
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
-    new Set(selectedProjectIds)
+    new Set(selectedProjectIds),
   );
   const [excludedCommits, setExcludedCommits] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   const toggleExpand = (id: string) => {
@@ -162,7 +162,7 @@ export function ProjectSummary() {
   };
 
   const selectedProjects = projects.filter((p) =>
-    selectedProjectIds.includes(p.id)
+    selectedProjectIds.includes(p.id),
   );
 
   return (
@@ -193,11 +193,11 @@ export function ProjectSummary() {
             const isExpanded = expandedProjects.has(project.id);
             const totalAdditions = commits.reduce(
               (sum, c) => sum + c.additions,
-              0
+              0,
             );
             const totalDeletions = commits.reduce(
               (sum, c) => sum + c.deletions,
-              0
+              0,
             );
             const includedCount =
               commits.length -
@@ -275,7 +275,9 @@ export function ProjectSummary() {
                         <CardContent className="p-5 pt-4 space-y-3">
                           <AnimatePresence>
                             {commits.map((commit, commitIndex) => {
-                              const isExcluded = excludedCommits.has(commit.hash);
+                              const isExcluded = excludedCommits.has(
+                                commit.hash,
+                              );
                               return (
                                 <motion.div
                                   key={commit.hash}
@@ -289,17 +291,17 @@ export function ProjectSummary() {
                                     "group rounded-xl border p-4 transition-colors duration-200",
                                     isExcluded
                                       ? "border-neutral-100 bg-neutral-50/50 opacity-50"
-                                      : "border-neutral-100 bg-white hover:border-neutral-200 hover:shadow-sm"
+                                      : "border-neutral-100 bg-white hover:border-neutral-200 hover:shadow-sm",
                                   )}
                                 >
                                   <div className="flex items-start gap-3">
                                     <motion.button
                                       onClick={() => toggleCommit(commit.hash)}
                                       className={cn(
-                                        "mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all duration-150",
+                                        "mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-150",
                                         isExcluded
                                           ? "border-neutral-200"
-                                          : "bg-neutral-900 border-neutral-900"
+                                          : "bg-neutral-900 border-neutral-900",
                                       )}
                                       whileTap={{ scale: 0.85 }}
                                     >
@@ -316,9 +318,9 @@ export function ProjectSummary() {
                                           {commit.shortHash}
                                         </code>
                                         <span className="text-[11px] text-neutral-400">
-                                          {new Date(commit.date).toLocaleDateString(
-                                            "zh-CN"
-                                          )}
+                                          {new Date(
+                                            commit.date,
+                                          ).toLocaleDateString("zh-CN")}
                                         </span>
                                       </div>
                                       <p
@@ -326,7 +328,7 @@ export function ProjectSummary() {
                                           "text-sm font-medium leading-relaxed",
                                           isExcluded
                                             ? "text-neutral-400 line-through"
-                                            : "text-neutral-800"
+                                            : "text-neutral-800",
                                         )}
                                       >
                                         {commit.subject}
