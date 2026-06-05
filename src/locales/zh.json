@@ -1,0 +1,82 @@
+{
+  "app": {
+    "name": "DevWeek",
+    "tagline": "周报生成助手"
+  },
+  "step": {
+    "timeRange": "时间范围",
+    "timeRangeDesc": "选择区间",
+    "summary": "摘要预览",
+    "summaryDesc": "查看 Commit",
+    "aiContext": "AI 上下文",
+    "aiContextDesc": "编辑内容",
+    "report": "生成周报",
+    "reportDesc": "查看结果"
+  },
+  "sidebar": {
+    "projects": "项目",
+    "addProject": "添加项目",
+    "settings": "设置"
+  },
+  "timeRange": {
+    "title": "选择时间范围",
+    "subtitle": "选择需要提取 Commit 的时间区间",
+    "thisWeek": "本周",
+    "lastWeek": "上周",
+    "last7Days": "近 7 天",
+    "last30Days": "近 30 天",
+    "custom": "自定义",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "next": "下一步：预览摘要"
+  },
+  "projectSummary": {
+    "title": "原始摘要预览",
+    "subtitle": "按项目查看提取到的 Commit 记录，可排除不想发送给 AI 的提交",
+    "commits": "次提交",
+    "prev": "上一步",
+    "next": "下一步：编辑上下文"
+  },
+  "aiContext": {
+    "title": "编辑 AI 上下文",
+    "subtitle": "确认将发送给 AI 的内容，补充额外信息",
+    "projects": "个项目",
+    "commitSummary": "Commit 汇总",
+    "extraContext": "补充上下文（可选）",
+    "extraContextHint": "补充非代码工作：会议、文档、Code Review 等，将一并发送给 AI",
+    "aiConfig": "AI 配置",
+    "provider": "Provider",
+    "model": "模型",
+    "apiBaseUrl": "API Base URL",
+    "apiKey": "API Key",
+    "prev": "上一步",
+    "generate": "生成周报",
+    "generating": "生成中..."
+  },
+  "reportViewer": {
+    "title": "周报预览",
+    "subtitle": "可直接编辑，确认后一键复制",
+    "editor": "编辑区",
+    "regenerate": "重新生成",
+    "preview": "渲染预览",
+    "back": "返回编辑",
+    "copyFeishu": "复制为飞书格式",
+    "copyMarkdown": "复制为 Markdown",
+    "copiedFeishu": "已复制飞书格式",
+    "copiedMarkdown": "已复制 Markdown"
+  },
+  "settings": {
+    "title": "设置",
+    "userIdentity": "用户身份",
+    "userIdentityHint": "用于过滤 Git 提交记录，支持多个邮箱",
+    "gitUsername": "Git 用户名",
+    "gitUsernamePlaceholder": "例如：张三",
+    "emails": "邮箱地址（用逗号分隔）",
+    "emailsPlaceholder": "zhangsan@example.com, zs@company.com",
+    "language": "界面语言",
+    "languageZh": "中文",
+    "languageEn": "English",
+    "aiService": "AI 服务配置",
+    "save": "保存并关闭"
+  }
+}

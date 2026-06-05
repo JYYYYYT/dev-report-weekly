@@ -1,0 +1,82 @@
+{
+  "app": {
+    "name": "DevWeek",
+    "tagline": "Weekly Report Assistant"
+  },
+  "step": {
+    "timeRange": "Time Range",
+    "timeRangeDesc": "Select Range",
+    "summary": "Summary",
+    "summaryDesc": "View Commits",
+    "aiContext": "AI Context",
+    "aiContextDesc": "Edit Content",
+    "report": "Report",
+    "reportDesc": "View Result"
+  },
+  "sidebar": {
+    "projects": "Projects",
+    "addProject": "Add Project",
+    "settings": "Settings"
+  },
+  "timeRange": {
+    "title": "Select Time Range",
+    "subtitle": "Choose the time period to extract commits from",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "custom": "Custom",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "next": "Next: Preview Summary"
+  },
+  "projectSummary": {
+    "title": "Commit Summary",
+    "subtitle": "Review extracted commits by project. Exclude any you don't want to send to AI.",
+    "commits": "commits",
+    "prev": "Previous",
+    "next": "Next: Edit Context"
+  },
+  "aiContext": {
+    "title": "Edit AI Context",
+    "subtitle": "Review what will be sent to AI and add extra context",
+    "projects": "projects",
+    "commitSummary": "Commit Summary",
+    "extraContext": "Extra Context (Optional)",
+    "extraContextHint": "Add non-code work: meetings, docs, code reviews, etc. This will be sent to AI along with commits.",
+    "aiConfig": "AI Configuration",
+    "provider": "Provider",
+    "model": "Model",
+    "apiBaseUrl": "API Base URL",
+    "apiKey": "API Key",
+    "prev": "Previous",
+    "generate": "Generate Report",
+    "generating": "Generating..."
+  },
+  "reportViewer": {
+    "title": "Report Preview",
+    "subtitle": "Editable. Copy when ready.",
+    "editor": "Editor",
+    "regenerate": "Regenerate",
+    "preview": "Preview",
+    "back": "Back to Edit",
+    "copyFeishu": "Copy as Feishu",
+    "copyMarkdown": "Copy as Markdown",
+    "copiedFeishu": "Copied Feishu format",
+    "copiedMarkdown": "Copied Markdown"
+  },
+  "settings": {
+    "title": "Settings",
+    "userIdentity": "User Identity",
+    "userIdentityHint": "Used to filter Git commits. Multiple emails supported.",
+    "gitUsername": "Git Username",
+    "gitUsernamePlaceholder": "e.g. John Doe",
+    "emails": "Email Addresses (comma separated)",
+    "emailsPlaceholder": "john@example.com, jd@company.com",
+    "language": "Language",
+    "languageZh": "中文",
+    "languageEn": "English",
+    "aiService": "AI Service Configuration",
+    "save": "Save & Close"
+  }
+}
