@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Local AI working notes
+/Task.md
+/Task-step-*.md
+/AGENT_RULE.md
+/AGENTS.local.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
