@@ -28,6 +28,36 @@ export interface ProjectCommitSummary {
   filesChanged: string[];
 }
 
+export interface ActivityEvidence {
+  id: string;
+  projectId: string;
+  repository: string;
+  commitHash: string;
+  shortHash: string;
+  subject: string;
+  committedAt: string;
+  files: string[];
+  additions: number;
+  deletions: number;
+}
+
+export interface ReportItem {
+  summary: string;
+  evidenceIds: string[];
+}
+
+export interface ReportSection {
+  heading: string;
+  items: ReportItem[];
+}
+
+export interface GeneratedReportPayload {
+  title: string;
+  sections: ReportSection[];
+  risks: ReportItem[];
+  nextSteps: ReportItem[];
+}
+
 export type TimeRange =
   | "this-week"
   | "last-week"
@@ -41,7 +71,7 @@ export interface TimeRangeValue {
   end?: string;
 }
 
-export type AIProvider = "openai" | "deepseek" | "claude" | "ollama";
+export type AIProvider = "openai" | "deepseek" | "ollama" | "custom";
 
 export interface AIConfig {
   provider: AIProvider;
@@ -53,4 +83,16 @@ export interface AIConfig {
 export interface UserIdentity {
   name: string;
   emails: string[];
+}
+
+export interface ProjectInspection {
+  path: string;
+  alias: string;
+  gitUserName: string | null;
+  gitUserEmail: string | null;
+}
+
+export interface DateRange {
+  since: string;
+  until: string;
 }

@@ -17,7 +17,9 @@ export function ReportViewer() {
     generatedReport,
     setGeneratedReport,
     setCurrentStep,
-    setIsGenerating,
+    generateWeeklyReport,
+    isGenerating,
+    generationError,
   } = useAppStore();
 
   const { t } = useTranslation();
@@ -43,9 +45,7 @@ export function ReportViewer() {
   };
 
   const handleRegenerate = async () => {
-    setIsGenerating(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsGenerating(false);
+    await generateWeeklyReport();
   };
 
   return (
@@ -76,6 +76,7 @@ export function ReportViewer() {
                   variant="ghost"
                   size="sm"
                   onClick={handleRegenerate}
+                  disabled={isGenerating}
                   className="h-8 px-3 text-xs gap-1.5 rounded-lg"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -141,6 +142,12 @@ export function ReportViewer() {
           </Card>
         </div>
       </div>
+
+      {generationError && (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {generationError}
+        </div>
+      )}
 
       <div className="flex justify-between items-center">
         <Button

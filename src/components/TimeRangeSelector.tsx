@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Loader2 } from "lucide-react";
 import { useAppStore } from "../stores/appStore";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { cn } from "../lib/utils";
 import type { TimeRange } from "../types";
 
@@ -16,8 +18,19 @@ const presets: { value: TimeRange; labelKey: string }[] = [
 const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export function TimeRangeSelector() {
-  const { timeRange, setTimeRange, setCurrentStep } = useAppStore();
+  const {
+    timeRange,
+    setTimeRange,
+    setCurrentStep,
+    scanSelectedProjects,
+    isScanning,
+    scanError,
+  } = useAppStore();
   const { t } = useTranslation();
+
+  const handleNext = async () => {
+    if (await scanSelectedProjects()) setCurrentStep(1);
+  };
 
   return (
     <div className="space-y-8">
@@ -89,10 +102,11 @@ export function TimeRangeSelector() {
             >
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-neutral-100 shadow-sm">
                 <div className="flex-1 space-y-1.5">
-                  <label className="text-xs font-medium text-neutral-500">
+                  <Label htmlFor="start-date">
                     {t("timeRange.startDate")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="start-date"
                     type="date"
                     value={timeRange.start || ""}
                     onChange={(e) =>
@@ -101,17 +115,18 @@ export function TimeRangeSelector() {
                         start: e.target.value,
                       })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-950/10"
+                    className="h-10 px-3"
                   />
                 </div>
                 <div className="text-neutral-300 pt-5">
                   <span className="text-lg">→</span>
                 </div>
                 <div className="flex-1 space-y-1.5">
-                  <label className="text-xs font-medium text-neutral-500">
+                  <Label htmlFor="end-date">
                     {t("timeRange.endDate")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="end-date"
                     type="date"
                     value={timeRange.end || ""}
                     onChange={(e) =>
@@ -120,7 +135,7 @@ export function TimeRangeSelector() {
                         end: e.target.value,
                       })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-950/10"
+                    className="h-10 px-3"
                   />
                 </div>
               </div>
@@ -129,12 +144,20 @@ export function TimeRangeSelector() {
         </AnimatePresence>
       </div>
 
+      {scanError && (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {scanError}
+        </div>
+      )}
+
       <div className="flex justify-end">
         <Button
-          onClick={() => setCurrentStep(1)}
-          className="h-11 px-8 rounded-xl text-sm font-medium"
+          onClick={handleNext}
+          disabled={isScanning}
+          className="h-11 px-8 rounded-xl text-sm font-medium gap-2"
         >
-          {t("timeRange.next")}
+          {isScanning && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isScanning ? t("timeRange.scanning") : t("timeRange.next")}
         </Button>
       </div>
     </div>

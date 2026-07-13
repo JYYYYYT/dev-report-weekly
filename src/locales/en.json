@@ -16,6 +16,7 @@
   "sidebar": {
     "projects": "Projects",
     "addProject": "Add Project",
+    "removeProject": "Remove project",
     "settings": "Settings"
   },
   "timeRange": {
@@ -28,12 +29,15 @@
     "custom": "Custom",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "next": "Next: Preview Summary"
+    "next": "Next: Preview Summary",
+    "scanning": "Reading Git history..."
   },
   "projectSummary": {
     "title": "Commit Summary",
     "subtitle": "Review extracted commits by project. Exclude any you don't want to send to AI.",
     "commits": "commits",
+    "noCommits": "No commits found",
+    "toggleProject": "Expand or collapse project",
     "prev": "Previous",
     "next": "Next: Edit Context"
   },
@@ -42,13 +46,17 @@
     "subtitle": "Review what will be sent to AI and add extra context",
     "projects": "projects",
     "commitSummary": "Commit Summary",
+    "evidenceItems": "evidence items",
+    "privacyHint": "This is everything that will be sent to AI. Local paths stay private and excluded commits are omitted.",
     "extraContext": "Extra Context (Optional)",
     "extraContextHint": "Add non-code work: meetings, docs, code reviews, etc. This will be sent to AI along with commits.",
+    "extraContextPlaceholder": "For example:\n• Joined an architecture review and agreed on the service split\n• Wrote the API design guide\n• Next week: add error handling and monitoring",
     "aiConfig": "AI Configuration",
     "provider": "Provider",
     "model": "Model",
     "apiBaseUrl": "API Base URL",
     "apiKey": "API Key",
+    "apiKeyHint": "Kept in memory for this session only and cleared when the app closes.",
     "prev": "Previous",
     "generate": "Generate Report",
     "generating": "Generating..."
@@ -67,6 +75,7 @@
   },
   "settings": {
     "title": "Settings",
+    "description": "Configure Git identity, language, and the AI service",
     "userIdentity": "User Identity",
     "userIdentityHint": "Used to filter Git commits. Multiple emails supported.",
     "gitUsername": "Git Username",
@@ -78,5 +87,15 @@
     "languageEn": "English",
     "aiService": "AI Service Configuration",
     "save": "Save & Close"
+  },
+  "errors": {
+    "desktopRequired": "Adding local repositories requires the DevWeek desktop app",
+    "noProjects": "Add and select at least one Git repository first",
+    "dateRangeIncomplete": "Select both a start and end date",
+    "dateRangeOrder": "The start date cannot be later than the end date",
+    "noEvidence": "Keep at least one commit as evidence",
+    "apiKeyRequired": "Enter an API key first; it is kept in memory for this session only",
+    "invalidAiReport": "The model did not return a valid structured report",
+    "unverifiedAiReport": "The AI report did not contain any verifiable Git evidence"
   }
 }

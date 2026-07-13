@@ -7,10 +7,6 @@
   ],
   "permissions": [
     "core:default",
-    "dialog:allow-open",
-    "fs:allow-read",
-    "fs:allow-write",
-    "fs:allow-read-dir",
-    "shell:allow-execute"
+    "dialog:allow-open"
   ]
 }
