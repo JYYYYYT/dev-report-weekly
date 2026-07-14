@@ -25,7 +25,7 @@ flowchart LR
     E --> F["Editable weekly report"]
 ```
 
-The AI provider receives commit subjects, relative filenames, dates, and diff statistics only after review. It does not receive absolute repository paths. A report item without a valid citation is not rendered.
+The provider receives only the reviewed evidence set—repository aliases, commit identifiers, subjects, dates, relative file paths, and diff statistics—plus any context the user adds explicitly. It never receives absolute repository paths.
 
 ## Trust model
 
