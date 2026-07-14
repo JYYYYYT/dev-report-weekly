@@ -1,61 +1,236 @@
-name: 'publish'
+name: Publish
 
 on:
   push:
-    branches:
-      - release
+    branches: [main]
+  workflow_dispatch:
 
-# This is the example from the readme.
-# On each push to the `release` branch it will create or update a GitHub release, build your app, and upload the artifacts to the release.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  publish-tauri:
+  prepare_release:
+    name: Prepare next release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Calculate version and create draft release
+        id: release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('node:fs');
+
+            const configuredVersion = JSON.parse(
+              fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'),
+            ).version;
+            const versionPattern = /^(?:app-v)?(\d+)\.(\d+)\.(\d+)$/;
+
+            const parseVersion = (value) => {
+              const match = versionPattern.exec(value);
+              return match ? match.slice(1).map(Number) : null;
+            };
+            const compareVersions = (left, right) => {
+              for (let index = 0; index < 3; index += 1) {
+                if (left[index] !== right[index]) {
+                  return left[index] - right[index];
+                }
+              }
+              return 0;
+            };
+
+            const configured = parseVersion(configuredVersion);
+            if (!configured) {
+              core.setFailed(
+                `src-tauri/tauri.conf.json contains an invalid version: ${configuredVersion}`,
+              );
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            const [releases, tags] = await Promise.all([
+              github.paginate(github.rest.repos.listReleases, {
+                owner,
+                repo,
+                per_page: 100,
+              }),
+              github.paginate(github.rest.repos.listTags, {
+                owner,
+                repo,
+                per_page: 100,
+              }),
+            ]);
+
+            const discovered = [
+              ...releases.map((release) => release.tag_name),
+              ...tags.map((tag) => tag.name),
+            ]
+              .map(parseVersion)
+              .filter(Boolean);
+            const current = [configured, ...discovered].reduce((highest, version) =>
+              compareVersions(version, highest) > 0 ? version : highest,
+            );
+            const nextVersion = `${current[0]}.${current[1]}.${current[2] + 1}`;
+            const tagName = `app-v${nextVersion}`;
+
+            const { data: release } = await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: tagName,
+              target_commitish: context.sha,
+              name: `App v${nextVersion}`,
+              draft: true,
+              prerelease: false,
+              generate_release_notes: true,
+            });
+
+            core.setOutput('release_id', String(release.id));
+            core.setOutput('tag_name', tagName);
+            core.setOutput('version', nextVersion);
+            await core.summary
+              .addHeading(`Preparing ${tagName}`)
+              .addLink('Draft release', release.html_url)
+              .write();
+
+  build:
+    name: Build (${{ matrix.label }})
+    needs: prepare_release
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+          - label: macOS arm64
+            platform: macos-latest
+            args: --target aarch64-apple-darwin
+          - label: macOS x64
+            platform: macos-latest
+            args: --target x86_64-apple-darwin
+          - label: Linux x64
+            platform: ubuntu-22.04
             args: ''
-          - platform: 'windows-latest'
+          - label: Windows x64
+            platform: windows-latest
             args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: setup node
-        uses: actions/setup-node@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
         with:
-          node-version: lts/*
+          version: 10
 
-      - name: install Rust stable
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ startsWith(matrix.label, 'macOS') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: install frontend dependencies
-        run: yarn install # change this to npm, pnpm or bun depending on which one you use.
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
 
-      - uses: tauri-apps/tauri-action@v1
+      - name: Write release version override
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ needs.prepare_release.outputs.version }}
+        run: >-
+          node -e 'const fs = require("node:fs");
+          fs.writeFileSync("src-tauri/tauri.release.conf.json",
+          JSON.stringify({ version: process.env.RELEASE_VERSION }));'
+
+      - name: Build and upload artifacts
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseId: ${{ needs.prepare_release.outputs.release_id }}
+          tagName: ${{ needs.prepare_release.outputs.tag_name }}
           releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
+          projectPath: .
+          tauriScript: pnpm tauri
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: devweek-v[version]-[platform]-[arch]-[bundle]
+          args: --config src-tauri/tauri.release.conf.json ${{ matrix.args }}
+
+  publish_release:
+    name: Publish release
+    needs: [prepare_release, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish the completed release
+        uses: actions/github-script@v9
+        env:
+          RELEASE_ID: ${{ needs.prepare_release.outputs.release_id }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { data: release } = await github.rest.repos.updateRelease({
+              owner,
+              repo,
+              release_id: Number(process.env.RELEASE_ID),
+              draft: false,
+            });
+            await core.summary
+              .addHeading(`Published ${release.tag_name}`)
+              .addLink('Open release', release.html_url)
+              .write();
+
+  cleanup_release:
+    name: Clean up failed draft
+    if: ${{ always() && needs.prepare_release.result == 'success' && needs.publish_release.result != 'success' }}
+    needs: [prepare_release, build, publish_release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete unpublished draft release
+        uses: actions/github-script@v9
+        env:
+          RELEASE_ID: ${{ needs.prepare_release.outputs.release_id }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const releaseId = Number(process.env.RELEASE_ID);
+            const { data: release } = await github.rest.repos.getRelease({
+              owner,
+              repo,
+              release_id: releaseId,
+            });
+
+            if (release.draft) {
+              await github.rest.repos.deleteRelease({
+                owner,
+                repo,
+                release_id: releaseId,
+              });
+              core.notice(`Deleted failed draft ${release.tag_name}`);
+            } else {
+              core.notice(`${release.tag_name} is already published; it was not deleted.`);
+            }

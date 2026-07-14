@@ -11,7 +11,7 @@ DevWeek makes the reliable parts deterministic and gives the synthesis work to A
 - **Evidence before prose.** Git history is collected locally, filtered by date and author, and shown for review before any model request.
 - **Auditable generation.** Every completed-work claim must cite a real evidence ID. Unsupported claims are removed by a local validator.
 - **A deliberate privacy boundary.** Repository paths are never sent to the provider, excluded commits stay local, and API keys live in memory only.
-- **Use the model you already have.** DevWeek can reuse an authenticated local Codex or Claude Code installation without copying credentials, or **BYOK** - call DeepSeek, OpenAI, Ollama, and other OpenAI-compatible endpoints.
+- **Use the model you already have.** DevWeek can reuse an authenticated local Codex or Claude Code installation without copying credentials. It also supports bring-your-own-key (BYOK) access to DeepSeek, OpenAI, and other OpenAI-compatible providers, as well as local endpoints such as Ollama.
 - **An editable last mile.** The validated Markdown remains fully editable and can be copied for Markdown or Feishu.
 
 ## Product flow
