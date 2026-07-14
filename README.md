@@ -27,19 +27,15 @@ flowchart LR
 
 The AI provider receives commit subjects, relative filenames, dates, and diff statistics only after review. It does not receive absolute repository paths. A report item without a valid citation is not rendered.
 
-## Product principles
+## Trust model
 
-### Build without permits
+DevWeek treats model output as untrusted input. A report crosses three explicit boundaries before it is ready to use:
 
-DevWeek requires no GitHub OAuth app, organization integration, webhook, or company rollout. A developer selects a local repository and gets value immediately. The product came from a real personal workflow and can be shipped end to end by one engineer.
+1. **Collection boundary.** Git commands run on the developer's machine. The developer reviews the collected commits, removes anything irrelevant or sensitive, and decides what may leave the device. Absolute repository paths are stripped before generation.
+2. **Generation boundary.** The provider receives only the reviewed evidence and a structured output contract. The model can organize and summarize that evidence, but it cannot create new sources of truth.
+3. **Validation boundary.** The generated report returns to a local validator. Completed-work claims with missing or unknown evidence IDs are removed, and the remaining Markdown stays editable so the developer makes the final call.
 
-### It's all about taste
-
-The important product decision is the boundary: automation should remove Friday's recall work without taking away editorial control. Evidence review happens before the external call; AI output is validated before display; the final report remains editable. Loading, empty, privacy, and failure states follow the existing visual language instead of growing into a settings-heavy developer tool.
-
-### AI is the default tool
-
-AI is the primary synthesis engine, not a decorative feature. At the same time, tasks that require exactness—Git execution, author filtering, date calculation, redaction, and citation validation—remain deterministic. This division makes the model useful without asking the user to trust it blindly.
+This separation keeps exact work—Git execution, identity and date filtering, redaction, and citation checking—in deterministic code while using a model only for the part that benefits from synthesis.
 
 ## Architecture
 
