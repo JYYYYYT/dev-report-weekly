@@ -115,9 +115,11 @@ jobs:
           - label: macOS arm64
             platform: macos-latest
             args: --target aarch64-apple-darwin
+            app_path: src-tauri/target/aarch64-apple-darwin/release/bundle/macos/DevWeek.app
           - label: macOS x64
             platform: macos-latest
             args: --target x86_64-apple-darwin
+            app_path: src-tauri/target/x86_64-apple-darwin/release/bundle/macos/DevWeek.app
           - label: Linux x64
             platform: ubuntu-22.04
             args: ''
@@ -167,6 +169,9 @@ jobs:
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Sign the complete macOS app bundle even without a Developer ID.
+          # This preserves bundle integrity but does not establish Apple trust.
+          APPLE_SIGNING_IDENTITY: ${{ runner.os == 'macOS' && '-' || '' }}
         with:
           releaseId: ${{ needs.prepare_release.outputs.release_id }}
           tagName: ${{ needs.prepare_release.outputs.tag_name }}
@@ -176,6 +181,17 @@ jobs:
           uploadWorkflowArtifacts: true
           workflowArtifactNamePattern: devweek-v[version]-[platform]-[arch]-[bundle]
           args: --config src-tauri/tauri.release.conf.json ${{ matrix.args }}
+
+      - name: Verify macOS ad-hoc signature
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APP_PATH: ${{ matrix.app_path }}
+        run: |
+          test -d "$APP_PATH"
+          test -f "$APP_PATH/Contents/_CodeSignature/CodeResources"
+          codesign --verify --deep --strict --verbose=4 "$APP_PATH"
+          codesign --display --verbose=4 "$APP_PATH"
 
   publish_release:
     name: Publish release
