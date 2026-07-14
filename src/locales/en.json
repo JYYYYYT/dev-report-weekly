@@ -59,7 +59,24 @@
     "apiKeyHint": "Kept in memory for this session only and cleared when the app closes.",
     "prev": "Previous",
     "generate": "Generate Report",
-    "generating": "Generating..."
+    "generating": "Generating...",
+    "cancel": "Stop Generation"
+  },
+  "localAgents": {
+    "title": "Local Agents",
+    "checking": "Looking for installed local agents…",
+    "readyDescription": "Installed and signed-in local agents are ready to use with their existing session—no need to sign in again.",
+    "actionDescription": "Local agents were found, but they need to be signed in or updated first.",
+    "notFound": "No connectable local agents were found. Install Codex or Claude Code, or set the corresponding BIN environment variable, then scan again.",
+    "desktopRequired": "Local agent detection is available in the DevWeek desktop app only.",
+    "available": "Ready to use",
+    "actionRequired": "Action needed",
+    "signInRequired": "Sign-in required",
+    "updateRequired": "Update required",
+    "useAgent": "Use {{agent}}",
+    "selected": "Selected",
+    "refresh": "Scan again",
+    "credentialsHint": "DevWeek only reuses the agent's existing sign-in state; it never reads, copies, or stores sign-in credentials."
   },
   "reportViewer": {
     "title": "Report Preview",
@@ -96,6 +113,27 @@
     "noEvidence": "Keep at least one commit as evidence",
     "apiKeyRequired": "Enter an API key first; it is kept in memory for this session only",
     "invalidAiReport": "The model did not return a valid structured report",
-    "unverifiedAiReport": "The AI report did not contain any verifiable Git evidence"
+    "unverifiedAiReport": "The AI report did not contain any verifiable Git evidence",
+    "codexNotFound": "Local Codex CLI was not found. Check the installation and refresh.",
+    "codexAuthRequired": "Codex is not signed in. Run codex login in a terminal first.",
+    "codexIncompatible": "This Codex version is too old. Update it and try again.",
+    "codexBusy": "Another Codex generation is already running.",
+    "codexTimeout": "Codex generation timed out. Try again.",
+    "codexExecutionFailed": "Codex could not finish the report. Check local Codex and try again.",
+    "codexInvalidResponse": "Codex did not return a valid structured report.",
+    "codexStartFailed": "The local Codex process could not be started.",
+    "claudeNotFound": "Local Claude Code was not found. Check the installation and scan again.",
+    "claudeAuthRequired": "Claude Code is not signed in. Run claude auth login in a terminal first.",
+    "claudeIncompatible": "This Claude Code version lacks the required safe-connection capabilities. Update it and try again.",
+    "claudeBusy": "Another Claude Code generation is already running.",
+    "claudeTimeout": "Claude Code generation timed out. Try again.",
+    "claudeExecutionFailed": "Claude Code could not finish the report. Check its local status and try again.",
+    "claudeAuthFailed": "Claude Code credentials were rejected by the service. Sign in again in a terminal and retry.",
+    "claudeModelUnavailable": "The configured Claude Code model has no available channel. Choose another model or try again later.",
+    "claudeGatewayIncompatible": "The custom Claude upstream rejected this request mode. Check its Claude Code compatibility.",
+    "claudeServiceUnavailable": "The Claude service is temporarily unavailable. Try again later.",
+    "claudeRateLimited": "Claude is receiving too many requests. Try again later.",
+    "claudeInvalidResponse": "Claude Code did not return a valid structured report.",
+    "claudeStartFailed": "The local Claude Code process could not be started."
   }
 }

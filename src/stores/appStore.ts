@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import i18n from "@/i18n";
-import { requestReport, scanRepository } from "@/lib/bridge";
+import {
+  cancelClaudeGeneration,
+  cancelCodexGeneration,
+  detectClaude as detectLocalClaude,
+  detectCodex as detectLocalCodex,
+  requestReport,
+  scanRepository,
+} from "@/lib/bridge";
 import {
   buildEvidence,
   renderReportMarkdown,
@@ -10,6 +17,7 @@ import {
 import type {
   AIConfig,
   AIProvider,
+  LocalAgentStatus,
   Project,
   ProjectCommitSummary,
   TimeRangeValue,
@@ -32,6 +40,10 @@ interface AppState {
   userIdentity: UserIdentity;
   settingsOpen: boolean;
   currentStep: number;
+  codexStatus: LocalAgentStatus | null;
+  isDetectingCodex: boolean;
+  claudeStatus: LocalAgentStatus | null;
+  isDetectingClaude: boolean;
 
   addProject: (project: Project) => void;
   removeProject: (id: string) => void;
@@ -50,12 +62,17 @@ interface AppState {
   setCurrentStep: (step: number) => void;
   scanSelectedProjects: () => Promise<boolean>;
   generateWeeklyReport: (extraContext?: string) => Promise<boolean>;
+  detectCodex: () => Promise<LocalAgentStatus>;
+  detectClaude: () => Promise<LocalAgentStatus>;
+  cancelWeeklyReport: () => Promise<void>;
 }
 
 export const providerPresets: Record<
   AIProvider,
   Pick<AIConfig, "baseUrl" | "model">
 > = {
+  codex: { baseUrl: "", model: "default" },
+  claude: { baseUrl: "", model: "default" },
   deepseek: {
     baseUrl: "https://api.deepseek.com/v1",
     model: "deepseek-chat",
@@ -103,11 +120,35 @@ function errorMessage(error: unknown): string {
     DATE_RANGE_ORDER: "errors.dateRangeOrder",
     INVALID_AI_REPORT: "errors.invalidAiReport",
     UNVERIFIED_AI_REPORT: "errors.unverifiedAiReport",
+    CODEX_NOT_FOUND: "errors.codexNotFound",
+    CODEX_AUTH_REQUIRED: "errors.codexAuthRequired",
+    CODEX_INCOMPATIBLE: "errors.codexIncompatible",
+    CODEX_BUSY: "errors.codexBusy",
+    CODEX_TIMEOUT: "errors.codexTimeout",
+    CODEX_EXECUTION_FAILED: "errors.codexExecutionFailed",
+    CODEX_INVALID_RESPONSE: "errors.codexInvalidResponse",
+    CODEX_START_FAILED: "errors.codexStartFailed",
+    CLAUDE_NOT_FOUND: "errors.claudeNotFound",
+    CLAUDE_AUTH_REQUIRED: "errors.claudeAuthRequired",
+    CLAUDE_INCOMPATIBLE: "errors.claudeIncompatible",
+    CLAUDE_BUSY: "errors.claudeBusy",
+    CLAUDE_TIMEOUT: "errors.claudeTimeout",
+    CLAUDE_EXECUTION_FAILED: "errors.claudeExecutionFailed",
+    CLAUDE_AUTH_FAILED: "errors.claudeAuthFailed",
+    CLAUDE_MODEL_UNAVAILABLE: "errors.claudeModelUnavailable",
+    CLAUDE_GATEWAY_INCOMPATIBLE: "errors.claudeGatewayIncompatible",
+    CLAUDE_SERVICE_UNAVAILABLE: "errors.claudeServiceUnavailable",
+    CLAUDE_RATE_LIMITED: "errors.claudeRateLimited",
+    CLAUDE_INVALID_RESPONSE: "errors.claudeInvalidResponse",
+    CLAUDE_START_FAILED: "errors.claudeStartFailed",
+    DESKTOP_REQUIRED: "errors.desktopRequired",
   };
   return keys[message] ? i18n.t(keys[message]) : message;
 }
 
 const persisted = loadPreferences();
+let codexDetectionPromise: Promise<LocalAgentStatus> | null = null;
+let claudeDetectionPromise: Promise<LocalAgentStatus> | null = null;
 
 export const useAppStore = create<AppState>((set, get) => ({
   projects: persisted.projects ?? [],
@@ -125,6 +166,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   userIdentity: persisted.userIdentity ?? defaultUserIdentity,
   settingsOpen: false,
   currentStep: 0,
+  codexStatus: null,
+  isDetectingCodex: false,
+  claudeStatus: null,
+  isDetectingClaude: false,
 
   addProject: (project) =>
     set((state) => {
@@ -231,6 +276,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ generationError: i18n.t("errors.apiKeyRequired") });
       return false;
     }
+    if (state.aiConfig.provider === "codex") {
+      const status = state.codexStatus ?? (await get().detectCodex());
+      if (!status.available || !status.compatible || !status.authenticated) {
+        set({ generationError: errorMessage(status.message) });
+        return false;
+      }
+    }
+    if (state.aiConfig.provider === "claude") {
+      const status = state.claudeStatus ?? (await get().detectClaude());
+      if (!status.available || !status.compatible || !status.authenticated) {
+        set({ generationError: errorMessage(status.message) });
+        return false;
+      }
+    }
 
     set({ isGenerating: true, generationError: "", aiContext: context });
     try {
@@ -254,8 +313,75 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
       return true;
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message === "CODEX_CANCELED" || message === "CLAUDE_CANCELED") {
+        set({ isGenerating: false, generationError: "" });
+        return false;
+      }
       set({ isGenerating: false, generationError: errorMessage(error) });
       return false;
+    }
+  },
+
+  detectCodex: () => {
+    if (codexDetectionPromise) return codexDetectionPromise;
+    set({ isDetectingCodex: true });
+    const pending = detectLocalCodex()
+      .then((status) => {
+        set({ codexStatus: status, isDetectingCodex: false });
+        return status;
+      })
+      .catch((error: unknown) => {
+        const status: LocalAgentStatus = {
+          available: false,
+          authenticated: false,
+          compatible: false,
+          version: null,
+          message: error instanceof Error ? error.message : String(error),
+        };
+        set({ codexStatus: status, isDetectingCodex: false });
+        return status;
+      })
+      .finally(() => {
+        codexDetectionPromise = null;
+      });
+    codexDetectionPromise = pending;
+    return pending;
+  },
+
+  detectClaude: () => {
+    if (claudeDetectionPromise) return claudeDetectionPromise;
+    set({ isDetectingClaude: true });
+    const pending = detectLocalClaude()
+      .then((status) => {
+        set({ claudeStatus: status, isDetectingClaude: false });
+        return status;
+      })
+      .catch((error: unknown) => {
+        const status: LocalAgentStatus = {
+          available: false,
+          authenticated: false,
+          compatible: false,
+          version: null,
+          message: error instanceof Error ? error.message : String(error),
+        };
+        set({ claudeStatus: status, isDetectingClaude: false });
+        return status;
+      })
+      .finally(() => {
+        claudeDetectionPromise = null;
+      });
+    claudeDetectionPromise = pending;
+    return pending;
+  },
+
+  cancelWeeklyReport: async () => {
+    const { aiConfig, isGenerating } = get();
+    if (!isGenerating) return;
+    if (aiConfig.provider === "codex") {
+      await cancelCodexGeneration();
+    } else if (aiConfig.provider === "claude") {
+      await cancelClaudeGeneration();
     }
   },
 }));

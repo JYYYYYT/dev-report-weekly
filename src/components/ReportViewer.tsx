@@ -87,7 +87,7 @@ export function ReportViewer() {
             <Textarea
               value={generatedReport}
               onChange={(e) => setGeneratedReport(e.target.value)}
-              className="min-h-[400px] border-0 rounded-none rounded-b-2xl focus-visible:ring-0 resize-none font-mono text-[13px] leading-relaxed"
+              className="min-h-100 border-0 rounded-none rounded-b-2xl focus-visible:ring-0 resize-none font-mono text-[13px] leading-relaxed"
             />
           </CardContent>
         </Card>

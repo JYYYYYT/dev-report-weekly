@@ -71,13 +71,27 @@ export interface TimeRangeValue {
   end?: string;
 }
 
-export type AIProvider = "openai" | "deepseek" | "ollama" | "custom";
+export type AIProvider =
+  | "codex"
+  | "claude"
+  | "openai"
+  | "deepseek"
+  | "ollama"
+  | "custom";
 
 export interface AIConfig {
   provider: AIProvider;
   baseUrl: string;
   apiKey: string;
   model: string;
+}
+
+export interface LocalAgentStatus {
+  available: boolean;
+  authenticated: boolean;
+  compatible: boolean;
+  version: string | null;
+  message: string;
 }
 
 export interface UserIdentity {

@@ -22,8 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AIProvider } from "@/types";
+import { LocalAgentsPanel } from "@/components/LocalAgentsPanel";
 
 const providers: { value: AIProvider; label: string }[] = [
+  { value: "codex", label: "Codex (本地)" },
+  { value: "claude", label: "Claude Code (本地)" },
   { value: "deepseek", label: "DeepSeek" },
   { value: "openai", label: "OpenAI" },
   { value: "ollama", label: "Ollama (本地)" },
@@ -41,6 +44,8 @@ export function SettingsModal() {
     setUserIdentity,
   } = useAppStore();
   const { t } = useTranslation();
+  const isLocalAgent =
+    aiConfig.provider === "codex" || aiConfig.provider === "claude";
 
   return (
     <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
@@ -138,6 +143,7 @@ export function SettingsModal() {
                   {t("settings.aiService")}
                 </h3>
               </div>
+              <LocalAgentsPanel />
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="settings-provider">
@@ -161,51 +167,59 @@ export function SettingsModal() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="settings-model">{t("aiContext.model")}</Label>
-                  <Input
-                    id="settings-model"
-                    value={aiConfig.model}
-                    onChange={(event) => setAiConfig({ model: event.target.value })}
-                    placeholder="deepseek-chat"
-                    className="h-10 px-3"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="settings-base-url">
-                    {t("aiContext.apiBaseUrl")}
-                  </Label>
-                  <Input
-                    id="settings-base-url"
-                    value={aiConfig.baseUrl}
-                    onChange={(event) =>
-                      setAiConfig({ baseUrl: event.target.value })
-                    }
-                    placeholder="https://api.deepseek.com/v1"
-                    className="h-10 px-3"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="settings-api-key">
-                    {t("aiContext.apiKey")}
-                  </Label>
-                  <div className="relative">
-                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                    <Input
-                      id="settings-api-key"
-                      type="password"
-                      value={aiConfig.apiKey}
-                      onChange={(event) =>
-                        setAiConfig({ apiKey: event.target.value })
-                      }
-                      placeholder="sk-..."
-                      className="h-10 pl-9 pr-3"
-                    />
-                  </div>
-                  <p className="text-[11px] text-neutral-400">
-                    {t("aiContext.apiKeyHint")}
-                  </p>
-                </div>
+                {!isLocalAgent && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="settings-model">
+                        {t("aiContext.model")}
+                      </Label>
+                      <Input
+                        id="settings-model"
+                        value={aiConfig.model}
+                        onChange={(event) =>
+                          setAiConfig({ model: event.target.value })
+                        }
+                        placeholder="deepseek-chat"
+                        className="h-10 px-3"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="settings-base-url">
+                        {t("aiContext.apiBaseUrl")}
+                      </Label>
+                      <Input
+                        id="settings-base-url"
+                        value={aiConfig.baseUrl}
+                        onChange={(event) =>
+                          setAiConfig({ baseUrl: event.target.value })
+                        }
+                        placeholder="https://api.deepseek.com/v1"
+                        className="h-10 px-3"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="settings-api-key">
+                        {t("aiContext.apiKey")}
+                      </Label>
+                      <div className="relative">
+                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                        <Input
+                          id="settings-api-key"
+                          type="password"
+                          value={aiConfig.apiKey}
+                          onChange={(event) =>
+                            setAiConfig({ apiKey: event.target.value })
+                          }
+                          placeholder="sk-..."
+                          className="h-10 pl-9 pr-3"
+                        />
+                      </div>
+                      <p className="text-[11px] text-neutral-400">
+                        {t("aiContext.apiKeyHint")}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

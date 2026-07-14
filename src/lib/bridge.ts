@@ -3,6 +3,7 @@ import type {
   ActivityEvidence,
   AIConfig,
   DateRange,
+  LocalAgentStatus,
   Project,
   ProjectCommitSummary,
   ProjectInspection,
@@ -45,4 +46,42 @@ export async function requestReport(
   return invoke<string>("generate_report", {
     request: { config, evidence, extraContext, language },
   });
+}
+
+function desktopOnlyAgentStatus(): LocalAgentStatus {
+  return {
+    available: false,
+    authenticated: false,
+    compatible: false,
+    version: null,
+    message: "DESKTOP_REQUIRED",
+  };
+}
+
+export async function detectCodex(): Promise<LocalAgentStatus> {
+  if (!isTauriRuntime()) {
+    return desktopOnlyAgentStatus();
+  }
+  return invoke<LocalAgentStatus>("detect_codex");
+}
+
+export async function cancelCodexGeneration(): Promise<void> {
+  if (!isTauriRuntime()) {
+    throw new Error("DESKTOP_REQUIRED");
+  }
+  return invoke<void>("cancel_codex_generation");
+}
+
+export async function detectClaude(): Promise<LocalAgentStatus> {
+  if (!isTauriRuntime()) {
+    return desktopOnlyAgentStatus();
+  }
+  return invoke<LocalAgentStatus>("detect_claude");
+}
+
+export async function cancelClaudeGeneration(): Promise<void> {
+  if (!isTauriRuntime()) {
+    throw new Error("DESKTOP_REQUIRED");
+  }
+  return invoke<void>("cancel_claude_generation");
 }

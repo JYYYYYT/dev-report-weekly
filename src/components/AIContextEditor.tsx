@@ -8,6 +8,7 @@ import {
   FolderGit2,
   Loader2,
   ShieldCheck,
+  Square,
 } from "lucide-react";
 import { buildEvidence, renderEvidenceContext } from "@/lib/report";
 import { useAppStore } from "@/stores/appStore";
@@ -25,8 +26,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AIProvider } from "@/types";
+import { LocalAgentsPanel } from "@/components/LocalAgentsPanel";
 
 const providers: { value: AIProvider; label: string }[] = [
+  { value: "codex", label: "Codex (本地)" },
+  { value: "claude", label: "Claude Code (本地)" },
   { value: "deepseek", label: "DeepSeek" },
   { value: "openai", label: "OpenAI" },
   { value: "ollama", label: "Ollama (本地)" },
@@ -57,6 +61,9 @@ export function AIContextEditor() {
     generateWeeklyReport,
     generationError,
     isGenerating,
+    codexStatus,
+    claudeStatus,
+    cancelWeeklyReport,
   } = useAppStore();
   const { t, i18n } = useTranslation();
   const selectedProjects = projects.filter((project) =>
@@ -69,6 +76,19 @@ export function AIContextEditor() {
   const evidenceContext = useMemo(
     () => renderEvidenceContext(evidence, i18n.language === "zh" ? "zh" : "en"),
     [evidence, i18n.language],
+  );
+  const isLocalAgent =
+    aiConfig.provider === "codex" || aiConfig.provider === "claude";
+  const activeLocalAgentStatus =
+    aiConfig.provider === "codex"
+      ? codexStatus
+      : aiConfig.provider === "claude"
+        ? claudeStatus
+        : null;
+  const activeLocalAgentReady = Boolean(
+    activeLocalAgentStatus?.available &&
+      activeLocalAgentStatus.compatible &&
+      activeLocalAgentStatus.authenticated,
   );
 
   return (
@@ -146,7 +166,7 @@ export function AIContextEditor() {
             value={aiContext}
             onChange={(event) => setAiContext(event.target.value)}
             placeholder={t("aiContext.extraContextPlaceholder")}
-            className="min-h-[140px] text-sm"
+            className="min-h-35 text-sm"
           />
         </div>
 
@@ -159,7 +179,15 @@ export function AIContextEditor() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <LocalAgentsPanel />
+
+            <div
+              className={
+                isLocalAgent
+                  ? "grid grid-cols-1 gap-4"
+                  : "grid grid-cols-2 gap-4"
+              }
+            >
               <div className="space-y-2">
                 <Label htmlFor="ai-provider">{t("aiContext.provider")}</Label>
                 <Select
@@ -178,41 +206,55 @@ export function AIContextEditor() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="ai-model">{t("aiContext.model")}</Label>
-                <Input
-                  id="ai-model"
-                  value={aiConfig.model}
-                  onChange={(event) => setAiConfig({ model: event.target.value })}
-                  className="h-10 px-3"
-                />
-              </div>
+              {!isLocalAgent && (
+                <div className="space-y-2">
+                  <Label htmlFor="ai-model">{t("aiContext.model")}</Label>
+                  <Input
+                    id="ai-model"
+                    value={aiConfig.model}
+                    onChange={(event) =>
+                      setAiConfig({ model: event.target.value })
+                    }
+                    className="h-10 px-3"
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="ai-base-url">{t("aiContext.apiBaseUrl")}</Label>
-              <Input
-                id="ai-base-url"
-                value={aiConfig.baseUrl}
-                onChange={(event) => setAiConfig({ baseUrl: event.target.value })}
-                className="h-10 px-3"
-              />
-            </div>
+            {!isLocalAgent && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-base-url">
+                    {t("aiContext.apiBaseUrl")}
+                  </Label>
+                  <Input
+                    id="ai-base-url"
+                    value={aiConfig.baseUrl}
+                    onChange={(event) =>
+                      setAiConfig({ baseUrl: event.target.value })
+                    }
+                    className="h-10 px-3"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="ai-api-key">{t("aiContext.apiKey")}</Label>
-              <Input
-                id="ai-api-key"
-                type="password"
-                value={aiConfig.apiKey}
-                onChange={(event) => setAiConfig({ apiKey: event.target.value })}
-                placeholder="sk-..."
-                className="h-10 px-3"
-              />
-              <p className="text-[11px] text-neutral-400">
-                {t("aiContext.apiKeyHint")}
-              </p>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-api-key">{t("aiContext.apiKey")}</Label>
+                  <Input
+                    id="ai-api-key"
+                    type="password"
+                    value={aiConfig.apiKey}
+                    onChange={(event) =>
+                      setAiConfig({ apiKey: event.target.value })
+                    }
+                    placeholder="sk-..."
+                    className="h-10 px-3"
+                  />
+                  <p className="text-[11px] text-neutral-400">
+                    {t("aiContext.apiKeyHint")}
+                  </p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -232,11 +274,29 @@ export function AIContextEditor() {
           {t("aiContext.prev")}
         </Button>
         <Button
-          onClick={() => generateWeeklyReport()}
-          disabled={isGenerating || !evidence.length}
+          onClick={() =>
+            isGenerating && isLocalAgent
+              ? cancelWeeklyReport()
+              : generateWeeklyReport()
+          }
+          disabled={
+            !evidence.length ||
+            (isGenerating && !isLocalAgent) ||
+            (isLocalAgent && !isGenerating && !activeLocalAgentReady)
+          }
+          variant={
+            isGenerating && isLocalAgent
+              ? "destructive"
+              : "default"
+          }
           className="h-11 px-8 rounded-xl text-sm font-medium gap-2"
         >
-          {isGenerating ? (
+          {isGenerating && isLocalAgent ? (
+            <>
+              <Square className="w-3.5 h-3.5 fill-current" />
+              {t("aiContext.cancel")}
+            </>
+          ) : isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
               {t("aiContext.generating")}

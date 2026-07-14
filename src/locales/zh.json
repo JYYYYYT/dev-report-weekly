@@ -59,7 +59,24 @@
     "apiKeyHint": "仅保存在当前运行内存中，关闭应用后清除。",
     "prev": "上一步",
     "generate": "生成周报",
-    "generating": "生成中..."
+    "generating": "生成中...",
+    "cancel": "停止生成"
+  },
+  "localAgents": {
+    "title": "本地 Agent",
+    "checking": "正在检测本机已安装的 Agent…",
+    "readyDescription": "检测到已安装且已登录的本地 Agent，可直接复用现有登录状态，无需再次登录。",
+    "actionDescription": "检测到本地 Agent，但需要先完成登录或更新版本。",
+    "notFound": "暂未检测到可连接的本地 Agent。安装 Codex、Claude Code，或设置对应的 BIN 环境变量后可重新检测。",
+    "desktopRequired": "本地 Agent 检测仅在 DevWeek 桌面应用中可用。",
+    "available": "可直接使用",
+    "actionRequired": "需要处理",
+    "signInRequired": "需要登录",
+    "updateRequired": "需要更新",
+    "useAgent": "使用 {{agent}}",
+    "selected": "已选择",
+    "refresh": "重新检测",
+    "credentialsHint": "DevWeek 只复用 Agent 现有的登录状态，不会读取、复制或保存登录凭据。"
   },
   "reportViewer": {
     "title": "周报预览",
@@ -96,6 +113,27 @@
     "noEvidence": "请至少保留一条 Commit 证据",
     "apiKeyRequired": "请先填写 API Key；密钥只保存在当前应用内存中",
     "invalidAiReport": "模型没有返回有效的结构化周报",
-    "unverifiedAiReport": "AI 返回的工作总结没有任何可验证的 Git 证据"
+    "unverifiedAiReport": "AI 返回的工作总结没有任何可验证的 Git 证据",
+    "codexNotFound": "没有找到本机 Codex CLI，请检查安装后刷新",
+    "codexAuthRequired": "Codex 尚未登录，请先在终端运行 codex login",
+    "codexIncompatible": "Codex 版本过旧，请更新后重试",
+    "codexBusy": "已有一个 Codex 生成任务正在运行",
+    "codexTimeout": "Codex 生成超时，请重试",
+    "codexExecutionFailed": "Codex 未能完成生成，请检查本机 Codex 状态后重试",
+    "codexInvalidResponse": "Codex 没有返回有效的结构化周报",
+    "codexStartFailed": "无法启动本机 Codex 进程",
+    "claudeNotFound": "没有找到本机 Claude Code，请检查安装后重新检测",
+    "claudeAuthRequired": "Claude Code 尚未登录，请先在终端运行 claude auth login",
+    "claudeIncompatible": "Claude Code 版本缺少安全连接所需能力，请更新后重试",
+    "claudeBusy": "已有一个 Claude Code 生成任务正在运行",
+    "claudeTimeout": "Claude Code 生成超时，请重试",
+    "claudeExecutionFailed": "Claude Code 未能完成生成，请检查本机状态后重试",
+    "claudeAuthFailed": "Claude Code 登录凭据被服务端拒绝，请在终端重新登录后重试",
+    "claudeModelUnavailable": "Claude Code 当前配置的模型没有可用渠道，请更换模型或稍后重试",
+    "claudeGatewayIncompatible": "自定义 Claude 上游拒绝了当前请求模式，请检查网关的 Claude Code 兼容性",
+    "claudeServiceUnavailable": "Claude 服务暂时不可用，请稍后重试",
+    "claudeRateLimited": "Claude 请求过于频繁，请稍后重试",
+    "claudeInvalidResponse": "Claude Code 没有返回有效的结构化周报",
+    "claudeStartFailed": "无法启动本机 Claude Code 进程"
   }
 }
